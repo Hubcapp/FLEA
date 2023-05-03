@@ -32,7 +32,6 @@ public class Server implements Runnable {
     private ServerSocketChannel m_socket;
     private boolean m_running;
     private String m_name;
-    private WorldManager m_worldManager;
     private PlayerManager m_playerManager;
     private TickManager m_tickManager;
 
@@ -44,7 +43,6 @@ public class Server implements Runnable {
 
     public Server() {
         m_running = true;
-        m_worldManager = new WorldManager();
         m_playerManager = new PlayerManager();
         m_tickManager = new TickManager();
     }
@@ -52,17 +50,11 @@ public class Server implements Runnable {
     public void run() {
         // Initialize rscminus
         Crypto.init();
-        JGameData.init(true);
-        if (!SleepWordGenerator.init()) { Logger.Warn("sleep generator init failed"); }
-        ChatCipher.init();
-        if (!ChatFilter.init()) { Logger.Warn("Chat censor init failed"); }
-
         System.out.println("exponent: " + Crypto.getPublicExponent());
         System.out.println("modulus: " + Crypto.getPublicModulus());
 
         // Initialize server
         m_name = DEFAULT_SERVER_NAME;
-        m_worldManager.init();
         m_playerManager.init(DEFAULT_PLAYER_MAX);
         m_tickManager.setTickRate(DEFAULT_TICK_RATE);
 
@@ -98,12 +90,9 @@ public class Server implements Runnable {
                 m_playerManager.process();
 
                 // Process these last
-                m_playerManager.processClientUpdate();
                 m_playerManager.processDisconnect();
                 m_playerManager.processOutgoingPackets();
 
-                // Clear world updates
-                m_worldManager.clearUpdates();
             }
             Sleep.sleep(1);
         }
@@ -113,7 +102,6 @@ public class Server implements Runnable {
         } catch (Exception e) {
         }
 
-        m_playerManager.saveAllPlayers();
 
         System.out.println("Server exited successfully");
     }
@@ -124,10 +112,6 @@ public class Server implements Runnable {
 
     public PlayerManager getPlayerManager() {
         return m_playerManager;
-    }
-
-    public WorldManager getWorldManager() {
-        return m_worldManager;
     }
 
     public static Server getInstance() {

@@ -34,41 +34,11 @@ public class Settings {
   public static boolean LOG_FORCE_TIMESTAMPS = true;
   public static boolean LOG_SHOW_TIMESTAMPS = true;
 
-  // Stripper Settings
-  public static String sanitizePath = "replays";
-  public static String sanitizeOutputPath = "sanitized";
-  public static String sanitizeBaseOutputPath = "sanitized";
-  public static boolean sanitizePublicChat = false;
-  public static boolean sanitizePrivateChat = false;
-  public static boolean sanitizeFriendsIgnore = false;
-  public static boolean sanitizeForce = false;
-  public static boolean sanitizeReplays = false;
-
-
-  // Scraper Settings
-  public static boolean dumpScenery = false;
-  public static boolean dumpBoundaries = false;
-  public static boolean dumpChat = false;
-  public static boolean dumpMessages = false;
-  public static boolean dumpNPCDamage = false;
-  public static boolean dumpNpcLocs = false;
-  public static boolean dumpSleepWords = false;
-  public static boolean dumpShops = false;
-  public static boolean dumpInventories = false;
-  public static boolean needNpcCreation = true;
-  public static boolean dumpAppearances = false;
-  public static boolean checkBoundaryRemoval = false;
-  public static String scraperOutputPath = "dump";
-  public static int threads = 5;
 
   // Utils that probably don't belong in settings, but are in Settings.java in RSC+
   public static class Dir {
 
     public static String JAR;
-    public static String SAVES;
-    public static String DUMP;
-    public static String SCREENSHOT;
-    public static String REPLAY;
   }
 
   public static void initDir() {
@@ -82,8 +52,6 @@ public class Settings {
       if (index != -1) Dir.JAR = Dir.JAR.substring(0, index);
     } catch (Exception e) {
     }
-    Dir.SAVES = new File(Dir.JAR, "playerSaves").getAbsolutePath();
-    FileUtil.mkdir(Dir.SAVES);
   }
 
   public static URL getResource(String fileName) { // TODO: Consider moving to a more relevant place

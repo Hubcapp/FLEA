@@ -34,17 +34,5 @@ public class Entity {
         return m_active;
     }
 
-    public int getX() {
-        return 0;
-    }
 
-    public int getY() {
-        return 0;
-    }
-
-    public int getDistance(Entity otherEntity) {
-        int xDist = getX() - otherEntity.getX();
-        int yDist = getY() - otherEntity.getY();
-        return Math.max(Math.abs(xDist), Math.abs(yDist));
-    }
 }

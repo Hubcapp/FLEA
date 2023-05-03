@@ -1,2 +1,7 @@
 .idea/
 openrsc-proxy-server.iml
+build/
+client.pem
+server.pem
+dist/
+out/

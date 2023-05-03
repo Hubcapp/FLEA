@@ -21,7 +21,6 @@ package rscminus.game;
 
 import rscminus.common.SocketUtil;
 import rscminus.game.data.LoginInfo;
-import rscminus.game.data.SaveInfo;
 
 import java.nio.channels.SocketChannel;
 
@@ -67,7 +66,7 @@ public class QueuedPlayer {
         m_active = active;
     }
 
-    private int handleLogin(LoginInfo loginInfo, SaveInfo saveInfo) {
+    private int handleLogin(LoginInfo loginInfo) {
         int opcode = m_packetStream.readUnsignedByte();
         if (opcode != 0)
             return LOGIN_REJECT;
@@ -76,8 +75,6 @@ public class QueuedPlayer {
         loginInfo.reconnecting = (m_packetStream.readUnsignedByte() == 1);
         int version = m_packetStream.readUnsignedInt();
 
-        if (version != 235)
-            return LOGIN_UPDATE;
 
         // Decrypt login block
         int length = m_packetStream.readData(m_stream);
@@ -102,6 +99,11 @@ public class QueuedPlayer {
 
         // TODO: We would check and grab account information here
         loginInfo.username = username;
+        System.out.println("username: " + loginInfo.username);
+        System.out.println("password: " + password);
+
+        if (version != 235)
+            return LOGIN_UPDATE;
 
         return LOGIN_SUCCESS;
     }
@@ -115,13 +117,11 @@ public class QueuedPlayer {
             return;
 
         LoginInfo loginInfo = new LoginInfo();
-        SaveInfo saveInfo = new SaveInfo();
-        int loginResponse = handleLogin(loginInfo, saveInfo);
+        int loginResponse = handleLogin(loginInfo);
 
         // Successful login
         if (loginResponse == LOGIN_SUCCESS) {
-            int saveInfoLoaded = saveInfo.load(loginInfo);
-            loginResponse = m_playerManager.addPlayer(m_socket, loginInfo, saveInfo);
+            loginResponse = m_playerManager.addPlayer(m_socket, loginInfo);
 
             // TODO: Add mod priviledges
             if (loginResponse == LOGIN_SUCCESS) {

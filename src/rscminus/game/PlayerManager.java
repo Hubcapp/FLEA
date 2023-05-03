@@ -20,7 +20,6 @@
 package rscminus.game;
 
 import rscminus.game.data.LoginInfo;
-import rscminus.game.data.SaveInfo;
 import rscminus.game.entity.Player;
 
 import java.nio.channels.SocketChannel;
@@ -29,7 +28,6 @@ public class PlayerManager {
     private Player m_players[];
     private QueuedPlayer m_queue[];
     private NetworkStream m_stream;
-    private WorldManager m_worldManager;
     private int m_size;
 
     public PlayerManager() {
@@ -41,9 +39,8 @@ public class PlayerManager {
         m_players = new Player[m_size];
         m_queue = new QueuedPlayer[m_size];
 
-        m_worldManager = Server.getInstance().getWorldManager();
         for (int i = 0; i < m_size; i++) {
-            m_players[i] = new Player(i, this, m_worldManager);
+            m_players[i] = new Player(i, this);
             m_queue[i] = new QueuedPlayer();
 
             m_players[i].reset();
@@ -66,7 +63,7 @@ public class PlayerManager {
         m_stream.flush(socket);
     }
 
-    public int addPlayer(SocketChannel socket, LoginInfo loginInfo, SaveInfo saveInfo) {
+    public int addPlayer(SocketChannel socket, LoginInfo loginInfo) {
         int loggedSlot = findPlayerByUsername(loginInfo.username);
 
         if (loginInfo.reconnecting && loggedSlot != -1) {
@@ -84,7 +81,6 @@ public class PlayerManager {
         if (slot != -1) {
             System.out.println("add slot: " + slot);
             m_players[slot].setLoginInfo(loginInfo);
-            m_players[slot].setSaveInfo(saveInfo);
             m_players[slot].setSocket(socket);
             m_players[slot].setActive(true);
             return QueuedPlayer.LOGIN_SUCCESS;
@@ -96,25 +92,8 @@ public class PlayerManager {
     public void removePlayer(int index) {
         if (m_players[index].isActive()) {
 
-            // TODO: Handle saving authentically with login server support
-            // Although player data *is* stored in flat files,
-            // it is most likely not stored in JSON files because RuneScape predates JSON by a few months.
-            m_players[index].getSaveInfo().save(m_players[index].getLoginInfo());
-
-            m_worldManager.removePlayer(m_players[index]);
             m_players[index].reset();
             System.out.println("remove slot: " + index);
-        }
-    }
-
-    // only called when server is shut down.
-    // not safe to use if server is still accepting new connections,
-    // since this function won't complete instantaneously.
-    public void saveAllPlayers() {
-        for (Player player : m_players) {
-            if (player.isActive()) {
-                player.getSaveInfo().save(player.getLoginInfo());
-            }
         }
     }
 
@@ -167,13 +146,6 @@ public class PlayerManager {
         for (int i = 0; i < m_size; i++) {
             if (m_players[i].isActive())
                 m_players[i].process();
-        }
-    }
-
-    public void processClientUpdate() {
-        for (int i = 0; i < m_size; i++) {
-            if (m_players[i].isActive())
-                m_players[i].processClientUpdate();
         }
     }
 
