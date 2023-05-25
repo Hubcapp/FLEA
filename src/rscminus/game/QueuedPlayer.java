@@ -22,13 +22,17 @@ package rscminus.game;
 import rscminus.common.SocketUtil;
 import rscminus.game.data.LoginInfo;
 
+import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 public class QueuedPlayer {
     private boolean m_active;
     private SocketChannel m_socket;
     private NetworkStream m_stream;
+
+    private byte[] m_stream_buffer_copy;
     private NetworkStream m_packetStream;
+    private ClientEmulatorStream forwardingStream;
     private PlayerManager m_playerManager;
 
     // Login response constants
@@ -75,7 +79,6 @@ public class QueuedPlayer {
         loginInfo.reconnecting = (m_packetStream.readUnsignedByte() == 1);
         int version = m_packetStream.readUnsignedInt();
 
-
         // Decrypt login block
         int length = m_packetStream.readData(m_stream);
         m_stream.decryptRSA(length);
@@ -99,19 +102,25 @@ public class QueuedPlayer {
 
         // TODO: We would check and grab account information here
         loginInfo.username = username;
-        System.out.println("username: " + loginInfo.username);
-        System.out.println("password: " + password);
 
-        if (version != 235)
-            return LOGIN_UPDATE;
+        try {
+            forwardingStream = new ClientEmulatorStream("localhost", 43600); // TODO: configurable endpoint
+            forwardingStream.writeStreamBytes(m_stream_buffer_copy, 0, 105); // TODO: be smarter about more diverse clients I guess
+            int response = forwardingStream.readStream();
+            System.out.println("login response for " + loginInfo.username + ": " + response);
+            return response;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
 
-        return LOGIN_SUCCESS;
+        return LOGIN_REJECT;
     }
 
     public void process() {
         m_stream.fill(m_socket);
-
-        // TODO: Handle timeout
+        // TODO: probably don't have to copy entire array each time.
+        m_stream_buffer_copy = new byte[5000];
+        System.arraycopy(m_stream.getByteArray(), 0, m_stream_buffer_copy, 0, m_stream.getByteArray().length);
 
         if (m_stream.readPacket(m_packetStream) == 0)
             return;
@@ -120,12 +129,8 @@ public class QueuedPlayer {
         int loginResponse = handleLogin(loginInfo);
 
         // Successful login
-        if (loginResponse == LOGIN_SUCCESS) {
+        if ((loginResponse & LOGIN_SUCCESS) != 0) {
             loginResponse = m_playerManager.addPlayer(m_socket, loginInfo);
-
-            // TODO: Add mod priviledges
-            if (loginResponse == LOGIN_SUCCESS) {
-            }
         }
 
         m_stream.flip();

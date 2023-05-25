@@ -27,7 +27,9 @@ import java.nio.channels.SocketChannel;
 
 public class Player extends Entity {
     private NetworkStream m_incomingStream;
+    private byte[] m_incomingStream_buffer_copy;
     private NetworkStream m_outgoingStream;
+    private byte[] m_outgoingStream_buffer_copy;
     private NetworkStream m_packetStream;
     private LoginInfo m_loginInfo;
     private ISAACCipher m_isaacIncoming;
@@ -153,6 +155,12 @@ public class Player extends Entity {
     public void processIncomingPackets() {
         m_incomingStream.fill(m_socket);
 
+        // TODO: probably don't have to copy entire buffer
+        m_incomingStream_buffer_copy = new byte[5000];
+        System.arraycopy(m_incomingStream.getByteArray(), 0, m_incomingStream_buffer_copy, 0, m_incomingStream.getByteArray().length);
+
+        // TODO: perhaps handle all ISAAC in FLEA
+
         int length;
         while ((length = m_incomingStream.readPacket(m_packetStream)) > 0) {
             int opcode = m_packetStream.readOpcode(m_isaacIncoming);
@@ -179,7 +187,6 @@ public class Player extends Entity {
 
     public void processOutgoingPackets() {
         m_outgoingStream.flush(m_socket);
-
 
         // Player is logged out, remove them from the player list
         if (m_loggedOut)

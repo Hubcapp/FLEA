@@ -48,7 +48,7 @@ public class Server implements Runnable {
     }
 
     public void run() {
-        // Initialize rscminus
+        // Initialize FLEA
         Crypto.init();
         System.out.println("exponent: " + Crypto.getPublicExponent());
         System.out.println("modulus: " + Crypto.getPublicModulus());

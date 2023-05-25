@@ -20,8 +20,6 @@
 package rscminus.game;
 
 import rscminus.common.ISAACCipher;
-import rscminus.game.constants.Game;
-import rscminus.game.entity.Player;
 
 public class PacketBuilder {
     public static final int OPCODE_LOGOUT = 165;
