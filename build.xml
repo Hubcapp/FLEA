@@ -1,4 +1,4 @@
-<project name="rscminus" default="run">
+<project name="flea" default="run">
         <property name="src.dir" value="src" />
         <property name="build.dir" value="build" />
 
@@ -6,7 +6,7 @@
         <property name="assets.dir" value="assets" />
         <property name="bin.dir" value="bin" />
 
-        <property name="jar.main-class" value="rscminus.game.Server" />
+        <property name="jar.main-class" value="flea.game.Server" />
         <property name="jar.name" value="${ant.project.name}.jar" />
         <property name="jar.file" value="${dist.dir}/${jar.name}" />
 
